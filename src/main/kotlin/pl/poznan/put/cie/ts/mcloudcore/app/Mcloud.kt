@@ -1,19 +1,25 @@
 package pl.poznan.put.cie.ts.mcloudcore.app
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.mongodb.MongoClientSettings
 import com.mongodb.ServerAddress
 import com.mongodb.client.MongoClients
 import org.bson.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.springframework.web.util.UriUtils
 import pl.poznan.put.cie.ts.mcloudcore.docker.request.ContainerRequest
 import pl.poznan.put.cie.ts.mcloudcore.docker.DockerConnector
 import pl.poznan.put.cie.ts.mcloudcore.rest.response.ContainerCreatedResponse
+import java.nio.charset.StandardCharsets
 
 @Component
 class Mcloud (
         @Autowired
-        val connector: DockerConnector
+        val connector: DockerConnector,
+        @Autowired
+        val mapper: ObjectMapper
 ) {
 
     companion object {
@@ -43,6 +49,12 @@ class Mcloud (
                 container.state.status,
                 container.networkSettings.ports.getValue("$MONGO_PORT/tcp")[0].getValue("HostPort").toInt()
         )
+    }
+
+    fun filterMongo(id: String, dbName: String, collection: String, filter: String): List<Map<String, Any>> {
+        val filterStr = UriUtils.decode(filter, StandardCharsets.UTF_8)
+        val filterJson: Map<String, Any> = mapper.readValue(filterStr)
+        return filterMongo(id, dbName, collection, filterJson)
     }
 
     fun filterMongo(id: String, dbName: String, collection: String, filter: Map<String, Any>): List<Map<String, Any>> {
