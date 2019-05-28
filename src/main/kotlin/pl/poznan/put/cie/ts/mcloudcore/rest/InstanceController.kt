@@ -58,7 +58,7 @@ class InstanceController (
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "details about selected MongoDB instance", response = MongoInstance::class)
     ])
-    @GetMapping("instance")
+    @GetMapping
     fun inspectInstance(
             @ApiParam(value = "id of instance to inspect") @RequestParam id: String
     ) = ResponseEntity
